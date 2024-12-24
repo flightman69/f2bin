@@ -5,24 +5,33 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Document</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <style> @keyframes gradient-bg { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } } .dynamic-bg { background: linear-gradient(270deg, #ff00cc, #333399, #ff6600); background-size: 600% 600%; animation: gradient-bg 16s ease infinite; } </style>
 </head>
 <body class="p-5">
-  <h1>Input File:</h1><br>
+  <div class="max-w2xl border mx-auto mt-4 p-5 rounded-lg  bg-[#FF8383]">
   <div class="max-w2xl border mx-auto mt-4 p-5 rounded-lg ">
+  <h1>Input File:</h1><br>
   <form id="uploadForm">
     <input type="file", id="fileInput", name="file"><br>
     <button type="submit" id="submitButton"
     class="block disabled:opacity-50 border px-5 py-1 rounded-lg
-    hover:bg-gray-200 active:bg-gray-300">Upload</button>
+    hover:bg-gray-200 active:bg-gray-300 bg-[#FFF574]">Upload</button>
   </form>
+</div>
+
+<div class="max-w2xl border mx-auto mt-4 p-5 rounded-lg ">
+  <button type="submit" id="convertButton"
+    class="block disabled:opacity-50 border px-5 py-1 rounded-lg
+    hover:bg-gray-200 active:bg-gray-300 bg-[#A19AD3]">Convert</button>
 </div>
 
 <div class="max-w2xl border mx-auto mt-4 p-5 rounded-lg" >
   <form action="" id="downloadForm">
-    <button id="downloadButton" class="block disabled:opacity-50 border px-5 py-1 rounded-lg bg-blue-500
+    <button id="downloadButton" class="block disabled:opacity-50 border px-5 py-1 rounded-lg bg-[#A1D6CB]
     hover:bg-blue-600 active:bg-gray-700" >Download</button>
   </form>
 </div>
+  </div>
   <script src="./index.js"></script>
 </body>
 </html>
