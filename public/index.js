@@ -1,4 +1,4 @@
-const baseUrl = "http://localhost:4322";
+const baseUrl = "https://arch.taild5cb8.ts.net";
 
 async function upload(file) {
   console.log(file);
