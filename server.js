@@ -17,6 +17,8 @@ const storage = multer.diskStorage({
 const upload = multer({ storage: storage });
 
 let lastUploadedFile = null; // Keep track of the latest uploaded file
+let lastConvertedFile = null; // Keep track of the latest converted file
+let originalFileName = null; // Keep track of the original uploaded file name
 
 // Upload endpoint
 app.post('/uploads', upload.single('file'), (req, res) => {
@@ -25,6 +27,7 @@ app.post('/uploads', upload.single('file'), (req, res) => {
   }
 
   lastUploadedFile = req.file.filename; // Store the filename of the last uploaded file
+  originalFileName = req.file.originalname; // Store the original file name
   res.status(200).json({
     message: 'File uploaded successfully',
     filePath: `uploads/${req.file.filename}`,
@@ -38,18 +41,44 @@ app.post('/convert', (req, res) => {
   }
 
   const filePath = path.join(__dirname, 'uploads', lastUploadedFile);
+  const convertedFileName = `${path.basename(lastUploadedFile, path.extname(lastUploadedFile))}_binary.txt`; // Conversion output file
+  const convertedFilePath = path.join(__dirname, 'uploads', convertedFileName);
 
-  exec(`mp3tobin -b ${filePath}`, (error, stdout, stderr) => {
+  exec(`./mp3tobin -b ${filePath}`, (error, stdout, stderr) => {
     if (error) {
       console.error(`Error running mp3tobin: ${error.message}`);
       return res.status(500).json({ error: 'Failed to process file with mp3tobin' });
     }
 
+    lastConvertedFile = convertedFileName; // Store the converted file name with "_binary" suffix
     console.log(`mp3tobin output: ${stdout}`);
     res.status(200).json({
       message: 'File processed successfully',
-      filePath: `uploads/${lastUploadedFile}`,
+      filePath: `uploads/${convertedFileName}`,
     });
+  });
+});
+
+// Download endpoint
+app.get('/uploads', (req, res) => {
+  if (!lastConvertedFile || !originalFileName) {
+    return res.status(404).json({ error: 'No converted file available for download' });
+  }
+
+  const convertedFilePath = path.join(__dirname, 'uploads', lastConvertedFile);
+  if (!fs.existsSync(convertedFilePath)) {
+    console.error(`File not found: ${convertedFilePath}`);
+    return res.status(404).json({ error: 'Converted file not found' });
+  }
+
+  const originalFileNameWithoutExt = path.basename(originalFileName, path.extname(originalFileName));
+  const downloadFileName = `${originalFileNameWithoutExt}_binary.txt`; // New download name
+
+  res.download(convertedFilePath, downloadFileName, (err) => {
+    if (err) {
+      console.error(`Error downloading file: ${err.message}`);
+      res.status(500).json({ error: 'Failed to download file' });
+    }
   });
 });
 
@@ -59,35 +88,4 @@ app.use(express.static('public'));
 const PORT = 4322;
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
-});
-
-// Download endpoint
-app.get('/uploads', (req, res) => {
-  const uploadsDir = path.join(__dirname, 'uploads');
-  const files = fs.readdirSync(uploadsDir);
-
-  if (files.length === 0) {
-    return res.status(404).json({ error: 'No files available for download' });
-  }
-
-  const latestFile = files.reduce((a, b) => {
-    const fileA = fs.statSync(path.join(uploadsDir, a)).mtime;
-    const fileB = fs.statSync(path.join(uploadsDir, b)).mtime;
-    return fileA > fileB ? a : b;
-  });
-
-  const filePath = path.join(uploadsDir, latestFile);
-  console.log(`Serving file: ${filePath}`); // Debugging log
-
-  if (!fs.existsSync(filePath)) {
-    console.error(`File not found: ${filePath}`);
-    return res.status(404).json({ error: 'File not found' });
-  }
-
-  res.download(filePath, latestFile, (err) => {
-    if (err) {
-      console.error(`Error downloading file: ${err.message}`);
-      res.status(500).json({ error: 'Failed to download file' });
-    }
-  });
 });

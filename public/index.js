@@ -27,33 +27,39 @@ async function convert() {
 }
 
 async function download() {
-  const file = document.getElementById("fileInput").files[0];
-  const fileName = file.name;
-  const fileNameWithoutExt = fileName.substring(0, fileName.lastIndexOf('.')) || fileName;
-  const newFileName = fileNameWithoutExt + '_binary.txt';
-
-  const downloadUrl = `${baseUrl}/uploads`;
-  fetch(downloadUrl)
-    .then((response) => {
-      if (!response.ok) {
-        throw new Error(`Failed to download file: ${response.statusText}`);
-      }
-      return response.blob();
-    })
-    .then((blob) => {
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.style.display = 'none';
-      a.href = url;
-      a.download = newFileName;
-      document.body.appendChild(a);
-      a.click();
-      window.URL.revokeObjectURL(url);
-    })
-    .catch((error) => {
-      alert(error.message);
-    });
-}
+    const file = document.getElementById("fileInput").files[0];
+    if (!file) {
+      alert("Please upload a file first!");
+      return;
+    }
+  
+    const downloadUrl = `${baseUrl}/uploads`;
+    fetch(downloadUrl)
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error(`Failed to download file: ${response.statusText}`);
+        }
+        return response.blob();
+      })
+      .then((blob) => {
+        const fileName = file.name;
+        const fileNameWithoutExt = fileName.substring(0, fileName.lastIndexOf('.')) || fileName;
+        const newFileName = `${fileNameWithoutExt}_binary.txt`;
+  
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.style.display = 'none';
+        a.href = url;
+        a.download = newFileName;
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+      })
+      .catch((error) => {
+        alert(error.message);
+      });
+  }
+  
 
 function downloadHandler(event) {
   event.preventDefault();
